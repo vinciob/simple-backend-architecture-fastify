@@ -35,9 +35,66 @@ The main goal is to showcase clean backend architecture, request validation, aut
 
 ---
 
+# Architecture Decisions
+
+### Entity as Single Source of Truth
+
+Each entity is defined inside a single file containing:
+- Mongoose schema and model
+- Zod validation schemas
+- TypeScript inferred types
+
+This approach keeps the domain definition centralized and consistent across validation, database access and API responses.
+
+Example:
+
+```txt
+entities/
+  user.entity.ts
+  todo.entity.ts
+```
+
+---
+
+### JWT Authentication Middleware
+
+Protected routes use a JWT authentication middleware.
+
+The middleware:
+- validates the Bearer token
+- loads the authenticated user from MongoDB
+- injects basic user information into the Fastify request object
+
+This allows protected controllers to access authenticated user information directly from:
+
+```ts
+request.user
+```
+
+while keeping authentication logic centralized and reusable.
+
+---
+
+### Ownership-Based Authorization
+
+Todo queries always include the authenticated user id.
+
+Example:
+
+```ts
+await Todo.findOne({
+  _id: todoId,
+  user: request.user._id
+})
+```
+
+This ensures users can only access and modify their own resources.
+
+---
+
 # API Routes
 
-## Auth
+### Auth
 
 ```http
 POST /api/auth/register
@@ -45,7 +102,7 @@ POST /api/auth/login
 GET  /api/auth/me
 ```
 
-## Todos
+### Todos
 
 ```http
 POST   /api/todos
@@ -73,26 +130,6 @@ Example request header:
 ```http
 Authorization: Bearer <token>
 ```
-
----
-
-# Entity Design
-
-Each entity is kept as a single source of truth.
-For this demo project, each entity file contains:
-- Mongoose schema and model
-- Zod validation schemas
-- TypeScript inferred types
-
-Example:
-
-```txt
-entities/
-  user.entity.ts
-  todo.entity.ts
-```
-
-This keeps the domain definition simple, centralized and easy to inspect.
 
 ---
 
@@ -139,25 +176,25 @@ Use a strong value for `JWT_SECRET` in any deployed environment. The example val
 
 # Getting Started
 
-## Install dependencies
+### Install dependencies
 
 ```bash
 npm install
 ```
 
-## Run in development mode
+### Run in development mode
 
 ```bash
 npm run dev
 ```
 
-## Build
+### Build
 
 ```bash
 npm run build
 ```
 
-## Start production build
+### Start production build
 
 ```bash
 npm start
@@ -167,7 +204,7 @@ npm start
 
 # Example Payloads
 
-## Register
+### Register
 
 ```json
 {
@@ -180,7 +217,7 @@ npm start
 }
 ```
 
-## Login
+### Login
 
 ```json
 {
@@ -189,7 +226,7 @@ npm start
 }
 ```
 
-## Create Todo
+### Create Todo
 
 ```json
 {
@@ -199,21 +236,6 @@ npm start
   "dueDate": "2026-05-30T10:00:00.000Z"
 }
 ```
-
----
-
-# Related Project
-
-This repository is part of:
-
-```txt
-simple-backend-architecture-showcase
-```
-
-Other planned implementations:
-- Express
-- FastAPI
-- Django REST Framework
 
 ---
 
