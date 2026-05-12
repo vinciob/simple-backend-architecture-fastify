@@ -1,0 +1,53 @@
+{
+  "name": "simple-backend-architecture-fastify",
+  "version": "1.0.0",
+  "description": "Fastify implementation of the `simple-backend-architecture-showcase` project. This repository implements a simple backend API using **Fastify**, **TypeScript**, **MongoDB**, **Mongoose**, **Zod** and **JWT authentication**. The domain is intentionally simple: users can register, login and manage their own todos.   The main goal is to showcase clean backend architecture, request validation, authentication middleware and ownership-based access control.",
+  "keywords": [
+    "fastify",
+    "typescript",
+    "mongodb",
+    "mongoose",
+    "zod",
+    "jwt",
+    "backend",
+    "architecture"
+  ],
+  "homepage": "https://github.com/vinciob/simple-backend-architecture-fastify#readme",
+  "bugs": {
+    "url": "https://github.com/vinciob/simple-backend-architecture-fastify/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vinciob/simple-backend-architecture-fastify.git"
+  },
+  "license": "MIT",
+  "author": "Vincenzo Brasca",
+  "type": "module",
+  "main": "server.ts",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node dist/server.js",
+    "dev": "tsx watch server.ts",
+    "build": "npx tsc"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/cors": "^11.2.0",
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.4.2",
+    "fastify": "^5.8.5",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.6.2",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.7.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  }
+}
