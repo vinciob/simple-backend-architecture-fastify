@@ -1,9 +1,8 @@
 // Middleware
 import { validateToken } from '../middleware/validateToken.js'
 // Routes
-// import { loginUser } from '../controllers/auth/login'
-// import { registerUser } from '../controllers/auth/register'
-// import { getMe } from '../controllers/auth/me'
+import { editMe } from '../controllers/user/editMe.js'
+import { deleteMe } from '../controllers/user/deleteMe.js'
 // Types
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify'
 
@@ -14,10 +13,10 @@ import type { FastifyInstance, FastifyPluginAsync } from 'fastify'
 export const userRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
     // Edit User
-    // fastify.patch('/me', { preHandler: validateToken }, editMe)
+    fastify.patch('/me', { preHandler: validateToken }, editMe)
 
     // Delete User
-    // fastify.delete('/me', { preHandler: validateToken }, deleteMe)
+    fastify.delete('/me', { preHandler: validateToken }, deleteMe)
 
     
 }

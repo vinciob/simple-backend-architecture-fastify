@@ -9,6 +9,7 @@ import { logger } from './lib/logger.js'
 // Routes
 import { authRoutes } from './routes/auth.js'
 import { todoRoutes } from './routes/todo.js'
+import { userRoutes } from './routes/user.js'
 // Types
 import type { FastifyInstance, FastifyError, FastifyRequest, FastifyReply } from 'fastify'
 
@@ -29,7 +30,7 @@ export const buildServer = async (): Promise<FastifyInstance> => {
 
     // Register routes
     await fastify.register(authRoutes, { prefix: '/auth' })
-    // await fastify.register(usersRoutes, { prefix: '/users' })
+    await fastify.register(userRoutes, { prefix: '/users' })
     await fastify.register(todoRoutes, { prefix: '/todos' })
 
     // Global error handler

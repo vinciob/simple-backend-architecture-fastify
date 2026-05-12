@@ -1,7 +1,7 @@
 import mongoose, { Model } from 'mongoose';
 import z from 'zod';
 // Utils
-import { ObjectIdZ } from '../lib/validateObjectId';
+import { ObjectIdZ } from '../lib/validateObjectId.js';
 
 // User Types
 export const userSexValues = ['male', 'female', 'other'] as const
