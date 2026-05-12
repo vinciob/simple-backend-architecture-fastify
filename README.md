@@ -59,45 +59,6 @@ PATCH  /api/todos/:todoId/reopen
 
 ---
 
-# Architecture
-
-```txt
-src/
-  config/
-    env.ts
-  db/
-    connection.ts
-  entities/
-    user.entity.ts
-    todo.entity.ts
-  middleware/
-    validateToken.ts
-  routes/
-    auth.routes.ts
-    todo.routes.ts
-  controllers/
-    auth/
-      registerUser.ts
-      loginUser.ts
-      getMe.ts
-    todos/
-      createTodo.ts
-      getTodos.ts
-      getTodoById.ts
-      updateTodo.ts
-      deleteTodo.ts
-      completeTodo.ts
-      reopenTodo.ts
-  lib/
-    authUtils.ts
-    logger.ts
-    validateObjectId.ts
-  app.ts
-  server.ts
-```
-
----
-
 # Authentication Flow
 
 Protected routes use a JWT middleware that:
