@@ -98,15 +98,42 @@ This keeps the domain definition simple, centralized and easy to inspect.
 
 # Environment Variables
 
-Create a `.env` file using `.env.example` as reference.
+Create a `.env` file in the project root before starting the server:
+
+```bash
+touch .env
+```
+
+For local development, you can use the following configuration:
 
 ```env
 PORT=5001
 NODE_ENV=development
-DB_URI=mongodb://localhost:27017/todo-fastify
+DB_URI=your-db-uri
 JWT_SECRET=your-secret-key
-
+FRONTEND_URL=http://localhost:3000
+ENABLE_CRON=false
 ```
+
+Required variables:
+
+- `PORT`: port used by the Fastify server.
+- `DB_URI`: MongoDB connection string.
+- `JWT_SECRET`: secret used to sign and verify JWT access tokens.
+
+Optional variables:
+
+- `NODE_ENV`: runtime environment. Defaults to `development`.
+- `FRONTEND_URL`: frontend origin allowed by CORS. Defaults to `http://localhost:3000`.
+- `ENABLE_CRON`: reserved flag for scheduled jobs. Defaults to `false`.
+
+For MongoDB Atlas, use your Atlas connection string:
+
+```env
+DB_URI=mongodb+srv://<username>:<password>@<cluster-url>/todo-fastify
+```
+
+Use a strong value for `JWT_SECRET` in any deployed environment. The example value is only meant for local development.
 
 ---
 
