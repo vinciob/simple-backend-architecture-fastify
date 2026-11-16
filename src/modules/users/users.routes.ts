@@ -37,9 +37,7 @@ export const userRoutes: FastifyPluginAsync = async (fastify) => {
   app.get(
     "/me",
     {
-      // onRequest: async (request) => {
-      //   await request.jwtVerify();
-      // },
+      onRequest: [app.authenticate],
       schema: userInformationRouteSchema,
     },
     async (request) => {

@@ -14,11 +14,11 @@ import type { Env } from "../config/env.ts";
 declare module "fastify" {
   interface FastifyInstance {
     config: Env;
-
     mongo: {
       client: MongoClient;
       db: Db;
     };
+    authenticate: (request: FastifyRequest) => Promise<void>;
   }
 }
 
