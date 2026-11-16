@@ -1,15 +1,22 @@
+// Plugins
+import fastifyCookie from "@fastify/cookie";
+import fastifyEnv from "@fastify/env";
+import { authPlugin } from "./plugins/auth.ts";
+import { databasePlugin } from "./plugins/database.ts";
+// Routes
+import { userRoutes } from "./modules/users/users.routes.ts";
+// Environment configuration
+import { EnvSchema } from "./config/env.ts";
+// Errors
+import { AppError } from "./shared/errors/app.error.ts";
+// Types
 import Fastify, {
   type FastifyError,
   type FastifyReply,
   type FastifyRequest,
   type FastifyServerOptions,
 } from "fastify";
-import { databasePlugin } from "./plugins/database.ts";
-import fastifyEnv from "@fastify/env";
-import { EnvSchema } from "./config/env.ts";
-import { userRoutes } from "./modules/users/users.routes.ts";
-import fastifyCookie from "@fastify/cookie";
-import { AppError } from "./shared/errors/app.error.ts";
+import { authRoutes } from "./modules/auth/auth.routes.ts";
 
 export async function buildApp(options: FastifyServerOptions = {}) {
   const app = Fastify({
@@ -27,11 +34,15 @@ export async function buildApp(options: FastifyServerOptions = {}) {
   // Register cookie plugin for handling cookies
   await app.register(fastifyCookie);
 
+  // JWT + middleware
+  await app.register(authPlugin);
+
   // Register Database plugin
   app.register(databasePlugin);
 
   // Register feature modules
   await app.register(userRoutes, { prefix: "/users" });
+  await app.register(authRoutes, { prefix: "/auth" });
 
   // Global error handler
   app.setErrorHandler(
