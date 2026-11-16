@@ -1,0 +1,48 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: fastify-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: test
+      HOST: 0.0.0.0
+      PORT: 3000
+      MONGODB_URI: mongodb://localhost:27017
+      MONGODB_DATABASE: fastify_showcase
+      MONGODB_POOL_SIZE: 10
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - backend-network
+
+  mongo:
+    image: mongo:8
+    container_name: fastify-mongo
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mongosh --quiet --eval "db.adminCommand('ping').ok" | grep 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - backend-network
+
+volumes:
+  mongo-data:
+
+networks:
+  backend-network:
+    driver: bridge

@@ -8,6 +8,7 @@ The main goal is to showcase clean backend architecture, request validation, aut
 ---
 
 # Tech Stack
+
 - Node.js
 - TypeScript
 - Fastify
@@ -21,6 +22,7 @@ The main goal is to showcase clean backend architecture, request validation, aut
 ---
 
 # Features
+
 - User registration
 - User login
 - JWT authentication
@@ -40,6 +42,7 @@ The main goal is to showcase clean backend architecture, request validation, aut
 ### Entity as Single Source of Truth
 
 Each entity is defined inside a single file containing:
+
 - Mongoose schema and model
 - Zod validation schemas
 - TypeScript inferred types
@@ -61,6 +64,7 @@ entities/
 Protected routes use a JWT authentication middleware.
 
 The middleware:
+
 - validates the Bearer token
 - loads the authenticated user from MongoDB
 - injects basic user information into the Fastify request object
@@ -68,7 +72,7 @@ The middleware:
 This allows protected controllers to access authenticated user information directly from:
 
 ```ts
-request.user
+request.user;
 ```
 
 while keeping authentication logic centralized and reusable.
@@ -84,8 +88,8 @@ Example:
 ```ts
 await Todo.findOne({
   _id: todoId,
-  user: request.user._id
-})
+  user: request.user._id,
+});
 ```
 
 This ensures users can only access and modify their own resources.
@@ -119,6 +123,7 @@ PATCH  /api/todos/:todoId/reopen
 # Authentication Flow
 
 Protected routes use a JWT middleware that:
+
 1. reads the `Authorization` header
 2. validates the Bearer token
 3. loads the authenticated user from MongoDB
@@ -198,6 +203,44 @@ npm run build
 
 ```bash
 npm start
+```
+
+---
+
+# Running Locally with Docker
+
+This project uses **Docker Compose** to run the Fastify backend and MongoDB database in separate containers.
+
+### Start the Application
+
+From the project root directory, run:
+
+```bash
+docker compose up -d --build
+```
+
+This command will:
+
+1. Build the Fastify backend Docker image.
+2. Pull the MongoDB image if necessary.
+3. Create the Docker network and persistent database volume.
+4. Start MongoDB and wait for its health check.
+5. Start the backend container.
+
+### Access the Application
+
+Once the containers are running, the services are available at:
+
+| Service      | Address                                 |
+| ------------ | --------------------------------------- |
+| Fastify API  | http://localhost:3000                   |
+| Health Check | http://localhost:3000/health            |
+| MongoDB      | `mongo:27017` (internal Docker network) |
+
+Verify that the API is running:
+
+```bash
+curl http://localhost:3000/health
 ```
 
 ---
