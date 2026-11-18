@@ -13,16 +13,13 @@ export const databasePlugin = fp(
 
     try {
       await client.connect();
-
       const db = client.db(app.config.MONGODB_DATABASE);
-
       await db.command({ ping: 1 });
 
-      app.decorate("mongo", {
-        client,
-        db,
-      });
+      // Decorate the Fastify instance with the MongoDB client and database instance
+      app.decorate("mongo", { client, db });
 
+      // Add a hook to close the MongoDB client for graceful shutdown
       app.addHook("onClose", async () => {
         await client.close();
       });
@@ -33,7 +30,5 @@ export const databasePlugin = fp(
       throw error;
     }
   },
-  {
-    name: "database",
-  },
+  { name: "database" },
 );
