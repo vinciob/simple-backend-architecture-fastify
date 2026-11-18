@@ -9,29 +9,33 @@ import type { UserDocument, NewUserDocument } from "./user.model.ts";
  */
 export function createUserRepository(collection: Collection<UserDocument>) {
   return {
+    // Creates a new user document in the collection
     async create(data: NewUserDocument): Promise<UserDocument> {
       const document: UserDocument = {
         ...data,
         _id: new ObjectId(),
       };
-
       await collection.insertOne(document);
-
       return document;
     },
 
+    // Finds a user document by its ID
     async findById(id: string): Promise<UserDocument | null> {
-      if (!ObjectId.isValid(id)) {
-        return null;
-      }
+      if (!ObjectId.isValid(id)) return null;
 
       return collection.findOne({
         _id: new ObjectId(id),
       });
     },
 
+    // Finds a user document by its email address
     async findByEmail(email: string): Promise<UserDocument | null> {
       return collection.findOne({ email });
+    },
+
+    // Ensures that the necessary indexes exist on the collection
+    async ensureIndexes() {
+      await collection.createIndex({ email: 1 }, { unique: true });
     },
   };
 }
