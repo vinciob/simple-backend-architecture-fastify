@@ -18,6 +18,7 @@ import Fastify, {
   type FastifyServerOptions,
 } from "fastify";
 import { authRoutes } from "./modules/auth/auth.routes.ts";
+import { taskRoutes } from "./modules/tasks/task.routes.ts";
 
 export async function buildApp(options: FastifyServerOptions = {}) {
   const app = Fastify({
@@ -48,6 +49,7 @@ export async function buildApp(options: FastifyServerOptions = {}) {
   // Register feature modules
   await app.register(userRoutes, { prefix: "/users" });
   await app.register(authRoutes, { prefix: "/auth" });
+  await app.register(taskRoutes, { prefix: "/tasks" });
 
   // Global error handler
   app.setErrorHandler(
