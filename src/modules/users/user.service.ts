@@ -9,17 +9,21 @@ import { errors } from "../../shared/errors/index.ts";
 
 /**
  * Creates a user service for handling user-related operations.
- * @param repository The user repository for database interactions.
+ * @param userRepository The user repository for database interactions.
  * @returns An object with methods for registering users and retrieving user info.
+ * @example
+ * const userService = createUserService(userRepository);
+ * const newUser = await userService.register({ name: "John Doe", email: "john@example.com", password: "password123" });
+ * const me = await userService.getMe(newUser.id);
  */
-export function createUserService(repository: UserRepository) {
+export function createUserService(userRepository: UserRepository) {
   return {
     /**
      * Registers a new user with the provided input data.
      */
     async register(input: RegisterUserInput): Promise<UserInfoResponse> {
       const email = input.email.trim().toLowerCase();
-      const existingUser = await repository.findByEmail(email);
+      const existingUser = await userRepository.findByEmail(email);
       if (existingUser) throw errors.conflict("Email already registered");
 
       const passwordHash = await argon2.hash(input.password, {
@@ -29,7 +33,7 @@ export function createUserService(repository: UserRepository) {
       const now = new Date();
 
       try {
-        const user = await repository.create({
+        const user = await userRepository.create({
           name: input.name.trim(),
           email,
           passwordHash,
@@ -51,7 +55,7 @@ export function createUserService(repository: UserRepository) {
      * Retrieves the information of the currently authenticated user.
      */
     async getMe(userId: string): Promise<UserInfoResponse> {
-      const user = await repository.findById(userId);
+      const user = await userRepository.findById(userId);
 
       if (!user) {
         throw errors.notFound("User not found");
