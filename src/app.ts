@@ -1,6 +1,7 @@
 // Plugins
 import fastifyCookie from "@fastify/cookie";
 import fastifyEnv from "@fastify/env";
+import cors from "@fastify/cors";
 import { authPlugin } from "./plugins/auth.ts";
 import { databasePlugin } from "./plugins/database.ts";
 // Routes
@@ -32,6 +33,10 @@ export async function buildApp(options: FastifyServerOptions = {}) {
   });
 
   // Register cookie plugin for handling cookies
+  await app.register(cors, {
+    origin: app.config.CLIENT_ORIGIN,
+    credentials: true,
+  });
   await app.register(fastifyCookie);
 
   // JWT + middleware

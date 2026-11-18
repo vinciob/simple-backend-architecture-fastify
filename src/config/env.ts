@@ -25,6 +25,9 @@ export const EnvSchema = Type.Object({
   HOST: Type.String({
     default: "0.0.0.0",
   }),
+  CLIENT_ORIGIN: Type.String({
+    pattern: "^https?://[^/]+$", // Must be a valid URL with http or https scheme and no trailing slash
+  }),
 
   MONGODB_URI: Type.String({
     minLength: 1,
