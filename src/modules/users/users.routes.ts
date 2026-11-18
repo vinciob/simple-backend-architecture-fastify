@@ -36,7 +36,6 @@ export const userRoutes: FastifyPluginAsync = async (fastify) => {
       schema: userInformationRouteSchema,
     },
     async (request) => {
-      console.log(request.user);
       return service.getMe(request.user.sub);
     },
   );
