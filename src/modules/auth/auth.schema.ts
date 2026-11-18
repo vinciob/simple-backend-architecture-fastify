@@ -33,3 +33,17 @@ export const LoginRouteSchema = {
     200: LoginResponseSchema,
   },
 };
+
+export const RefreshTokenRouteSchema = {
+  tags: [schemaAuthTag],
+  response: {
+    200: LoginResponseSchema,
+  },
+};
+
+export const LogoutRouteSchema = {
+  tags: [schemaAuthTag],
+  response: {
+    204: { type: "null" },
+  },
+};
