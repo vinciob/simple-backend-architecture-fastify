@@ -24,13 +24,8 @@ export const userRoutes: FastifyPluginAsync = async (fastify) => {
   // POST /users
   app.post("/", { schema: registerRouteSchema }, async (request, reply) => {
     const user = await service.register(request.body);
-    const accessToken = app.jwt.sign({ sub: user.id });
 
-    return reply.code(201).send({
-      user,
-      accessToken,
-      tokenType: "Bearer",
-    });
+    return reply.code(201).send({ user });
   });
 
   // GET /users/me

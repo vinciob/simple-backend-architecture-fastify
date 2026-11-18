@@ -31,9 +31,7 @@ export const RegisterUserSchema = Type.Object(
       maxLength: 128,
     }),
   },
-  {
-    additionalProperties: false,
-  },
+  { additionalProperties: false },
 );
 export type RegisterUserInput = Static<typeof RegisterUserSchema>;
 
@@ -42,10 +40,7 @@ export type RegisterUserInput = Static<typeof RegisterUserSchema>;
  */
 export const RegisterResponseSchema = Type.Object({
   user: UserResponseSchema,
-  accessToken: Type.String(),
-  tokenType: Type.Literal("Bearer"),
 });
-export type RegisterUserResponse = Static<typeof RegisterResponseSchema>;
 
 /**
  * Route tags for user-related endpoints
