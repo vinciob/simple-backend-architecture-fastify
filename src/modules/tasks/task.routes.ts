@@ -12,6 +12,9 @@ import {
   DeleteTaskRouteSchema,
 } from "./task.schema.ts";
 
+/**
+ * Task routes for handling task-related HTTP requests
+ */
 export const taskRoutes: FastifyPluginAsync = async (fastify) => {
   const app = fastify.withTypeProvider<TypeBoxTypeProvider>();
   const collection = app.mongo.db.collection<TaskDocument>("tasks");

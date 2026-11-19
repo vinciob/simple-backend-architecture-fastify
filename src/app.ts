@@ -20,6 +20,9 @@ import Fastify, {
 import { authRoutes } from "./modules/auth/auth.routes.ts";
 import { taskRoutes } from "./modules/tasks/task.routes.ts";
 
+/**
+ * Build and configure the Fastify application.
+ */
 export async function buildApp(options: FastifyServerOptions = {}) {
   const app = Fastify({
     logger: true,

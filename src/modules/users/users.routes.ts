@@ -12,6 +12,9 @@ import {
   userInformationRouteSchema,
 } from "./user.schema.ts";
 
+/**
+ * User routes plugin for Fastify.
+ */
 export const userRoutes: FastifyPluginAsync = async (fastify) => {
   // Initialize Fastify app with TypeBox type provider
   const app = fastify.withTypeProvider<TypeBoxTypeProvider>();
