@@ -1,286 +1,301 @@
 # simple-backend-architecture-fastify
 
-Fastify implementation of the `simple-backend-architecture-showcase` project.
-This repository implements a simple backend API using **Fastify**, **TypeScript**, **MongoDB**, **Mongoose**, **Zod** and **JWT authentication**.
-The domain is intentionally simple: users can register, login and manage their own todos.  
-The main goal is to showcase clean backend architecture, request validation, authentication middleware and ownership-based access control.
+**A lightweight, performance-oriented REST API built with Fastify, TypeScript, and MongoDB.**
 
----
+This project is a backend architecture showcase designed around a **Performance First** philosophy: minimize unnecessary abstractions, reduce runtime overhead, and leverage the native capabilities of the underlying technologies.
 
-# Tech Stack
+Rather than relying on heavyweight frameworks, ORMs, or dependency injection containers, the application adopts a pragmatic functional architecture focused on performance, maintainability, scalability, and developer experience.
 
-- Node.js
-- TypeScript
-- Fastify
-- MongoDB
-- Mongoose
-- Zod
-- JWT
-- bcrypt
-- dotenv
+## Tech Stack
 
----
+| Technology                | Purpose                               |
+| ------------------------- | ------------------------------------- |
+| **Node.js**               | JavaScript runtime                    |
+| **TypeScript**            | Static typing and type safety         |
+| **Fastify**               | High-performance HTTP framework       |
+| **MongoDB Native Driver** | Direct database interaction           |
+| **TypeBox + Ajv**         | Schema-based request validation       |
+| **JWT (HS256)**           | Stateless access token authentication |
+| **Argon2id**              | Secure password hashing               |
+| **Docker Compose**        | Containerized application environment |
 
-# Features
+## Architecture
 
-- User registration
-- User login
-- JWT authentication
-- Protected routes
-- Authenticated user injected into request context
-- Todo CRUD
-- Todo ownership validation
-- Zod request validation
-- Mongoose models
-- Centralized environment configuration
-- Modular project structure
+The application follows a **Functional Layered Architecture**, organized by feature.
 
----
-
-# Architecture Decisions
-
-### Entity as Single Source of Truth
-
-Each entity is defined inside a single file containing:
-
-- Mongoose schema and model
-- Zod validation schemas
-- TypeScript inferred types
-
-This approach keeps the domain definition centralized and consistent across validation, database access and API responses.
-
-Example:
-
-```txt
-entities/
-  user.entity.ts
-  todo.entity.ts
+```text
+HTTP Request
+     |
+     v
+ Fastify Routes
+     |
+     v
+ Service Layer
+     |
+     v
+ Repository Layer
+     |
+     v
+ MongoDB Native Driver
+     |
+     v
+   MongoDB
 ```
 
----
+Each layer has a clearly defined responsibility:
 
-### JWT Authentication Middleware
+- **Routes:** HTTP handling, authentication, request validation, and response schemas.
+- **Services:** Business logic and application rules.
+- **Repositories:** Database queries, persistence, and data access.
 
-Protected routes use a JWT authentication middleware.
+Dependencies are injected through lightweight factory functions and initialized once during module registration.
 
-The middleware:
+This approach avoids unnecessary class hierarchies, controller boilerplate, and dependency injection frameworks while preserving separation of concerns and testability.
 
-- validates the Bearer token
-- loads the authenticated user from MongoDB
-- injects basic user information into the Fastify request object
+## Performance-First Design
 
-This allows protected controllers to access authenticated user information directly from:
+Performance is a primary architectural consideration throughout the project.
 
-```ts
-request.user;
+### 1. Fastify Native Capabilities
+
+Fastify provides a low-overhead HTTP layer with schema-based validation and optimized JSON serialization.
+
+The application uses **TypeBox** to define JSON Schema-compatible contracts, allowing Fastify to leverage Ajv for request validation and fast-json-stringify for response serialization.
+
+### 2. MongoDB Native Driver
+
+Instead of introducing an ODM such as Mongoose, the application interacts with MongoDB using its official Node.js driver.
+
+This avoids document hydration overhead and provides direct control over queries, projections, indexes, and database operations.
+
+MongoDB connections are managed through a shared connection pool initialized during application startup.
+
+### 3. Stateless JWT Authentication
+
+Access tokens use signed JWTs with a **10-minute expiration**.
+
+Protected endpoints validate the token cryptographically without querying the database to check session state.
+
+Refresh tokens are handled separately through persistent MongoDB sessions.
+
+This reduces database interaction during authentication while maintaining refresh token rotation and session revocation capabilities.
+
+### 4. Optimized Database Operations
+
+Database access is designed to avoid unnecessary round trips:
+
+- Atomic operations for updates and deletions.
+- Ownership checks directly in MongoDB query filters.
+- Field projections to retrieve only required data.
+- Indexes supporting frequently used filters and sorting.
+- Connection pooling for efficient connection reuse.
+
+## Project Structure
+
+The project follows a feature-first modular architecture, where application functionality is organized into independent, self-contained modules rather than grouping all routes, services, and repositories into global directories.
+
+Each feature encapsulates its own HTTP endpoints, business logic, validation schemas, data models, and persistence operations.
+
+This organization improves code discoverability, reduces coupling between unrelated features, and allows the application to grow without introducing unnecessary architectural complexity.
+
+```text
+src/
+├── app.ts
+├── server.ts
+│
+├── config/
+│   └── env.ts
+│
+├── plugins/
+│   ├── auth.ts
+│   └── database.ts
+│
+├── modules/
+│   ├── auth/
+│   ├── users/
+│   └── tasks/
+│
+├── shared/
+│   └── errors/
+│
+└── types/
+    └── fastify.d.ts
 ```
 
-while keeping authentication logic centralized and reusable.
+### Directory Responsibilities
 
----
+**config/ — Application Configuration**
 
-### Ownership-Based Authorization
+Centralizes environment variables and configuration schemas. Configuration is validated during application startup using TypeBox and @fastify/env, following a fail-fast approach to prevent the server from starting with invalid or missing settings.
 
-Todo queries always include the authenticated user id.
+**plugins/ — Infrastructure & Fastify Extensions**
 
-Example:
+Contains reusable Fastify plugins responsible for infrastructure-level concerns such as database connections and authentication.
+Plugins integrate with Fastify's lifecycle and encapsulation system, allowing resources to be initialized once and shared across application modules.
 
-```ts
-await Todo.findOne({
-  _id: todoId,
-  user: request.user._id,
-});
-```
+**modules/ — Feature-Based Organization**
 
-This ensures users can only access and modify their own resources.
+Contains the application's business features, each implemented as an independent module.
+Every module follows the same internal conventions:
 
----
+| File             | Responsibility                                                             |
+| ---------------- | -------------------------------------------------------------------------- |
+| \*.routes.ts     | HTTP endpoints, request handling, authentication hooks, and response codes |
+| \*.service.ts    | Business logic, application rules, and data transformations                |
+| \*.repository.ts | Database access, queries, projections, and persistence                     |
+| \*.schema.ts     | TypeBox validation schemas, HTTP contracts, and TypeScript types           |
+| \*.model.ts      | Data structures representing persisted documents                           |
+| \*.utils.ts      | Feature-specific utility functions                                         |
 
-# API Routes
+New features can be introduced by adding a new directory under modules/ without reorganizing the existing application.
 
-### Auth
+**shared/ — Cross-Cutting Components**
 
-```http
-POST /api/auth/register
-POST /api/auth/login
-GET  /api/auth/me
-```
+Contains reusable components that are not specific to a single business feature.
+Currently, this includes centralized application error classes that provide consistent error handling and standardized HTTP responses.
 
-### Todos
+**types/ — Global TypeScript Extensions**
 
-```http
-POST   /api/todos
-GET    /api/todos
-GET    /api/todos/:todoId
-PATCH  /api/todos/:todoId
-DELETE /api/todos/:todoId
-PATCH  /api/todos/:todoId/complete
-PATCH  /api/todos/:todoId/reopen
-```
+Contains TypeScript declaration files used to extend framework-level types.
+For example, fastify.d.ts defines the custom decorators registered by Fastify plugins, such as the MongoDB connection, application configuration, and authentication middleware.
 
----
+**app.ts — Application Factory**
 
-# Authentication Flow
+Creates and configures the Fastify instance, registers plugins and feature modules, and defines global application behavior.
+The application factory is separate from the HTTP server startup, enabling the application to be initialized independently for testing.
 
-Protected routes use a JWT middleware that:
+**server.ts — Application Entry Point**
 
-1. reads the `Authorization` header
-2. validates the Bearer token
-3. loads the authenticated user from MongoDB
-4. attaches basic user information to `request.user`
-5. allows the controller to access the authenticated user safely
+Handles HTTP server startup and process lifecycle management, including graceful shutdown through SIGINT and SIGTERM.
+This separation keeps infrastructure initialization independent from process execution.
 
-Example request header:
+## Getting Started
 
-```http
-Authorization: Bearer <token>
-```
+### Prerequisites
 
----
+- Node.js compatible with the project configuration
+- npm
+- Docker and Docker Compose
 
-# Environment Variables
+### Environment Configuration
 
-Create a `.env` file in the project root before starting the server:
+Create a `.env` file in the project root:
 
-```bash
-touch .env
-```
-
-For local development, you can use the following configuration:
-
-```env
-PORT=5001
+```dotenv
 NODE_ENV=development
-DB_URI=your-db-uri
-JWT_SECRET=your-secret-key
-FRONTEND_URL=http://localhost:3000
-ENABLE_CRON=false
+PORT=3000
+HOST=0.0.0.0
+
+MONGODB_URI=mongodb://localhost:27017
+MONGODB_DATABASE=fastify_showcase
+MONGODB_POOL_SIZE=10
+
+JWT_SECRET=your-generated-secret
+CLIENT_ORIGIN=http://localhost:5173
 ```
 
-Required variables:
-
-- `PORT`: port used by the Fastify server.
-- `DB_URI`: MongoDB connection string.
-- `JWT_SECRET`: secret used to sign and verify JWT access tokens.
-
-Optional variables:
-
-- `NODE_ENV`: runtime environment. Defaults to `development`.
-- `FRONTEND_URL`: frontend origin allowed by CORS. Defaults to `http://localhost:3000`.
-- `ENABLE_CRON`: reserved flag for scheduled jobs. Defaults to `false`.
-
-For MongoDB Atlas, use your Atlas connection string:
-
-```env
-DB_URI=mongodb+srv://<username>:<password>@<cluster-url>/todo-fastify
-```
-
-Use a strong value for `JWT_SECRET` in any deployed environment. The example value is only meant for local development.
-
----
-
-# Getting Started
-
-### Install dependencies
+Generate a secure JWT secret:
 
 ```bash
-npm install
+openssl rand -hex 32
 ```
 
-### Run in development mode
+Replace `JWT_SECRET` with the generated value. Never commit real secrets to version control.
 
-```bash
-npm run dev
-```
+### Option 1 — Run with Docker Compose
 
-### Build
-
-```bash
-npm run build
-```
-
-### Start production build
-
-```bash
-npm start
-```
-
----
-
-# Running Locally with Docker
-
-This project uses **Docker Compose** to run the Fastify backend and MongoDB database in separate containers.
-
-### Start the Application
-
-From the project root directory, run:
+Build and start the application and MongoDB:
 
 ```bash
 docker compose up -d --build
 ```
 
-This command will:
+Docker Compose starts the backend and database as separate services.
 
-1. Build the Fastify backend Docker image.
-2. Pull the MongoDB image if necessary.
-3. Create the Docker network and persistent database volume.
-4. Start MongoDB and wait for its health check.
-5. Start the backend container.
+Within the Docker network, the backend connects to MongoDB using:
 
-### Access the Application
+```text
+mongodb://mongo:27017
+```
 
-Once the containers are running, the services are available at:
+Verify container status:
 
-| Service      | Address                                 |
-| ------------ | --------------------------------------- |
-| Fastify API  | http://localhost:3000                   |
-| Health Check | http://localhost:3000/health            |
-| MongoDB      | `mongo:27017` (internal Docker network) |
+```bash
+docker compose ps
+```
 
-Verify that the API is running:
+View backend logs:
+
+```bash
+docker compose logs -f backend
+```
+
+Stop the containers:
+
+```bash
+docker compose down
+```
+
+MongoDB data persists in a named Docker volume.
+
+### Option 2 — Local Development
+
+Start MongoDB:
+
+```bash
+docker compose up -d mongo
+```
+
+Ensure the MongoDB service publishes port `27017` to `127.0.0.1` in the local Docker Compose configuration.
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start Fastify with automatic reload:
+
+```bash
+npm run dev
+```
+
+The backend will be available at:
+
+```text
+http://localhost:3000
+```
+
+Verify the health endpoint:
 
 ```bash
 curl http://localhost:3000/health
 ```
 
----
+### Production Build
 
-# Example Payloads
+Compile TypeScript:
 
-### Register
-
-```json
-{
-  "firstName": "John",
-  "lastName": "Doe",
-  "sex": "male",
-  "email": "john@example.com",
-  "password": "Password123",
-  "phone": "+390000000000"
-}
+```bash
+npm run build
 ```
 
-### Login
+Run the compiled application:
 
-```json
-{
-  "email": "john@example.com",
-  "password": "Password123"
-}
+```bash
+npm run start
 ```
 
-### Create Todo
+## Authentication Flow
 
-```json
-{
-  "title": "Study Fastify architecture",
-  "description": "Review routes, middleware, validation and entity design",
-  "priority": "high",
-  "dueDate": "2026-05-30T10:00:00.000Z"
-}
-```
-
----
+1. The client authenticates through `/auth/login`.
+2. The backend verifies the credentials.
+3. A new session is created in MongoDB.
+4. A signed JWT access token is returned in the response.
+5. A refresh token is stored in an HttpOnly cookie.
+6. Protected routes validate the JWT without a session database lookup.
+7. When the access token expires, `/auth/refresh` rotates the refresh token and returns a new access token.
+8. Logout revokes the refresh session and clears its cookie.
 
 # Author
 
